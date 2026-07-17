@@ -87,6 +87,7 @@ function buildSystemPrompt(todayISO) {
 
 Rules:
 - If the content does not describe a specific event with a real date/time (e.g. it's a newsletter, receipt with no event, or generic page/image content), set "is_event": false and leave other fields as empty strings or null.
+- If the content clearly describes a real event (people agreeing to meet, a scheduled call, etc.) but never states an explicit title or subject line — common in casual chat/text threads — synthesize a short, sensible title from context instead of leaving it blank, e.g. "Meeting with Adi, Mugdha, and Neena" or "Call with Jordan". Prefer using participant names over a generic word like "Meetup" when names are visible.
 - If no explicit year is given, assume the nearest future occurrence relative to today.
 - If no end time is given, set "end" to null (the caller will default to a 1-hour event).
 - "start" and "end" should be the plain wall-clock time as stated (no UTC offset) — timezone handling is separate.
@@ -244,8 +245,16 @@ async function main() {
   }
 
   if (!details.is_event) {
-    Script.setShortcutOutput("No event detected in this email.");
+    Script.setShortcutOutput("No event detected.");
     return;
+  }
+
+  if (!details.title || !details.title.trim()) {
+    // Belt-and-suspenders: even with the prompt rule above, don't ever create
+    // a blank-titled event. Also force the confirmation prompt in this case,
+    // since a missing title is itself a sign the extraction was shakier than usual.
+    details.title = "Untitled Event";
+    details.confidence = Math.min(details.confidence, CONFIDENCE_THRESHOLD - 0.01);
   }
 
   if (details.confidence >= CONFIDENCE_THRESHOLD) {
