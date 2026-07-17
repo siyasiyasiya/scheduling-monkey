@@ -1,6 +1,6 @@
 <div align="center">
 
-# TEXT → CALENDAR
+# SCHEDULING MONKEY
 
 ### **share text, a link, or an image. get a calendar event.**
 
@@ -53,7 +53,7 @@ timezone handling is DST-aware — it converts the wall-clock time the LLM extra
 ## setup
 
 1. install [Scriptable](https://scriptable.app/) (free, iOS/iPadOS)
-2. create a new script, paste in `EmailToCalendar.js`, name it exactly `EmailToCalendar`
+2. create a new script, paste in `SchedulingMonkey.js`, name it exactly `SchedulingMonkey`
 3. grab a free Groq API key at [console.groq.com/keys](https://console.groq.com/keys) — no credit card needed
 4. run it once. on first run it'll ask you to:
    - paste your Groq API key (stored in iOS Keychain, on-device only)
@@ -69,7 +69,7 @@ timezone handling is DST-aware — it converts the wall-clock time the LLM extra
 - image → tap Share on the image → Scriptable → pick this script
 
 **via Shortcuts:**
-build a Shortcut with "Get Input from Share Sheet" (accepting text, URLs, or images) → "Run Script" pointing at `EmailToCalendar`
+build a Shortcut with "Get Input from Share Sheet" (accepting text, URLs, or images) → "Run Script" pointing at `SchedulingMonkey`
 
 ---
 
