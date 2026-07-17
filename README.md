@@ -1,43 +1,94 @@
-# Email → Apple Calendar Bridge
+<div align="center">
 
-A Scriptable script that reads an email's text, extracts event details with an LLM (via Groq's free API), and creates the event directly in Apple Calendar — no CalDAV, no app-specific passwords.
+# EMAIL → APPLE CALENDAR
 
-## How it works
+### **share anything. get a calendar event. no friction.**
 
-1. Share an email's text into the script (via the Share Sheet, or paste it manually through a Shortcut).
-2. The script sends the email body to Groq's API (free, open-weight model) with a prompt asking for structured JSON: title, start/end time, location, and a confidence score.
-3. High-confidence extractions are added to your calendar automatically. Low-confidence ones show a confirmation prompt first.
-4. A local notification confirms the event was added.
+[![built with Scriptable](https://img.shields.io/badge/Built%20with-Scriptable-orange?style=for-the-badge)](https://scriptable.app)
+[![powered by Groq](https://img.shields.io/badge/Powered%20by-Groq%20%28free%29-red?style=for-the-badge)](https://groq.com)
+[![runs on iOS](https://img.shields.io/badge/Runs%20on-iOS%20%2F%20iPadOS-blue?style=for-the-badge)](https://apple.com/ios)
 
-## Setup
+<br />
 
-1. Install [Scriptable](https://scriptable.app/) (free, iOS/iPadOS).
-2. Create a new script in Scriptable, paste in `EmailToCalendar.js`, and name it exactly `EmailToCalendar`.
-3. Get a free Groq API key at [console.groq.com/keys](https://console.groq.com/keys) — no credit card required.
-4. Run the script (via Shortcuts, or Scriptable's own Share Sheet integration — see below). On first run, it'll prompt you to:
-   - Paste your Groq API key (stored securely in Keychain, on-device only)
-   - Pick which calendar new events should go to
+**share an email, a link, or an image of a flyer — and get a calendar event in Apple Calendar in seconds. powered by Groq's free LLM API. no CalDAV, no app passwords, no subscriptions.**
 
-## Feeding it an email
+</div>
 
-There are two ways to get email text into the script:
+---
 
-- **Share Sheet**: select the email's text (long-press → select) → Share → Scriptable → choose this script.
-- **Manual paste via Shortcuts**: build a Shortcut with an "Ask for Input" (Text) action feeding into a "Run Script" action pointed at this script — paste the copied email body when prompted.
+## what it does
 
-## Configuration
+share basically anything event-related at it and it figures out the rest:
 
-A few constants at the top of `EmailToCalendar.js` you may want to tune:
+- **emails** — paste or share an email body with event info
+- **links** — share a URL to an event page; it fetches and reads the content
+- **images** — share a screenshot, flyer, poster, or ticket photo; the vision model reads it
 
-- `CONFIDENCE_THRESHOLD` — how confident the model needs to be before auto-adding an event without asking (default `0.75`).
-- `GROQ_MODEL` — which Groq-hosted model to use (default `llama-3.3-70b-versatile`).
+it extracts the title, date/time, timezone, location, and any useful notes (confirmation numbers, dial-in links, dress codes, etc.), then creates the event directly in Apple Calendar via EventKit — no third-party calendar integrations needed.
 
-## Notes & limitations
+high-confidence results are added automatically. lower-confidence ones show a confirmation prompt first so you can verify before it commits.
 
-- Cost: Groq's free tier has no charge and generous rate limits for personal, on-device use — no billing setup needed.
-- Scriptable's Calendar API doesn't currently support setting native Calendar alerts/alarms on created events — the notification you get is an immediate "event was added" confirmation, not a reminder before the event starts.
-- No dedup logic yet — since this is triggered manually per-email rather than as an automatic inbox sweep, duplicate events aren't a practical risk in normal use.
+---
 
-## Privacy
+## how it works
 
-Your API key is stored in iOS Keychain, locally on your device — it's never written to this repo or shared anywhere. If you share this project with someone else, they'll be prompted to enter their own key on first run.
+```
+share email / link / image
+        ↓
+Groq API (llama-3.3-70b for text, llama-4-scout for images)
+        ↓
+structured JSON: title, start, end, timezone, location, notes, confidence
+        ↓
+confidence ≥ 0.75 → auto-add     confidence < 0.75 → confirm first
+        ↓
+EventKit creates the event in your chosen Apple Calendar
+        ↓
+local notification confirms it's done
+```
+
+timezone handling is DST-aware — it converts the wall-clock time the LLM extracts into the correct UTC offset for that specific date, so events don't land an hour off after a daylight saving transition.
+
+---
+
+## setup
+
+1. install [Scriptable](https://scriptable.app/) (free, iOS/iPadOS)
+2. create a new script, paste in `EmailToCalendar.js`, name it exactly `EmailToCalendar`
+3. grab a free Groq API key at [console.groq.com/keys](https://console.groq.com/keys) — no credit card needed
+4. run it once (via Shortcuts or Scriptable's Share Sheet). on first run it'll ask you to:
+   - paste your Groq API key (stored in iOS Keychain, on-device only)
+   - pick which calendar new events go to
+
+---
+
+## feeding it content
+
+**from the share sheet:**
+- email body → long-press to select text → Share → Scriptable → pick this script
+- event link → tap Share in your browser → Scriptable → pick this script
+- flyer or screenshot → tap Share on the image → Scriptable → pick this script
+
+**via Shortcuts:**
+build a Shortcut with "Get Input from Share Sheet" (accepting text, URLs, or images) → "Run Script" pointing at `EmailToCalendar`
+
+---
+
+## configuration
+
+a few constants at the top of the file you might want to tune:
+
+| constant | default | what it does |
+|----------|---------|--------------|
+| `CONFIDENCE_THRESHOLD` | `0.75` | below this, shows a confirm prompt before adding |
+| `GROQ_TEXT_MODEL` | `llama-3.3-70b-versatile` | model used for emails and web pages |
+| `GROQ_VISION_MODEL` | `meta-llama/llama-4-scout-17b-16e-instruct` | model used for images |
+| `LINK_TEXT_MAX_CHARS` | `3000` | how much of a fetched page to send to the model |
+
+---
+
+## notes
+
+- **cost:** Groq's free tier covers way more than typical personal use — no billing setup needed
+- **privacy:** your API key lives in iOS Keychain, on your device only — never leaves it
+- **calendar alerts:** Scriptable's EventKit API doesn't support setting native reminders on created events — the notification you get is a "successfully added" confirmation, not a pre-event reminder
+- **duplicates:** since this is manually triggered per-share rather than an inbox sweep, duplicate events aren't really a risk in normal use
