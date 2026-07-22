@@ -35,7 +35,7 @@ high-confidence extractions are added automatically. lower-confidence ones show 
 ```
 share text / link / image
         ↓
-groq api (llama-3.3-70b for text, llama-4-scout for images)
+groq api (qwen3.6-27b — text, links, and images)
         ↓
 structured json: title, start, end, timezone, location, notes, confidence
         ↓
@@ -76,8 +76,7 @@ build a shortcut with "Get Input from Share Sheet" (accepting text, urls, or ima
 | constant | default | what it does |
 |----------|---------|--------------|
 | `CONFIDENCE_THRESHOLD` | `0.75` | below this, shows a confirm prompt before adding |
-| `GROQ_TEXT_MODEL` | `llama-3.3-70b-versatile` | model used for text and web pages |
-| `GROQ_VISION_MODEL` | `meta-llama/llama-4-scout-17b-16e-instruct` | model used for images |
+| `GROQ_MODEL` | `qwen/qwen3.6-27b` | model used for all inputs (text, links, images) |
 | `LINK_TEXT_MAX_CHARS` | `3000` | how much of a fetched page to send to the model |
 
 ---
